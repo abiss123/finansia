@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Finansia — Dashboard Keuangan Pribadi</title>
+    <meta
+      name="description"
+      content="Website keuangan pribadi lengkap untuk mencatat transaksi, anggaran, tujuan, tagihan, hutang piutang, dan laporan."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">F</div>
+          <div>
+            <strong>Finansia</strong>
+            <span>Keuangan pribadi</span>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Navigasi utama">
+          <a href="#dashboard" class="nav-link active">Dashboard</a>
+          <a href="#transactions" class="nav-link">Transaksi</a>
+          <a href="#budgets" class="nav-link">Anggaran</a>
+          <a href="#goals" class="nav-link">Tujuan</a>
+          <a href="#bills" class="nav-link">Tagihan</a>
+          <a href="#debts" class="nav-link">Hutang/Piutang</a>
+          <a href="#reports" class="nav-link">Laporan</a>
+          <a href="#settings" class="nav-link">Pengaturan</a>
+        </nav>
+
+        <div class="sidebar-card">
+          <small>Kesehatan kas bulan ini</small>
+          <strong id="cashHealth">-</strong>
+          <span id="cashHealthText">Memuat data...</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Ringkasan</p>
+            <h1>Kelola uang dengan data yang rapi</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="btn secondary" id="seedDemoBtn">Isi data demo</button>
+            <button class="btn danger ghost" id="resetBtn">Reset</button>
+            <button class="btn primary" data-open-modal="transactionModal">+ Transaksi</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="section active">
+          <div class="filters card">
+            <label>
+              Bulan
+              <input type="month" id="monthFilter" />
+            </label>
+            <label>
+              Cari transaksi
+              <input type="search" id="searchInput" placeholder="contoh: gaji, makan, listrik" />
+            </label>
+            <label>
+              Kategori
+              <select id="categoryFilter">
+                <option value="">Semua kategori</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="kpi card">
+              <span>Total Saldo</span>
+              <strong id="totalBalance">Rp0</strong>
+              <small>Semua pemasukan - pengeluaran</small>
+            </article>
+            <article class="kpi card positive">
+              <span>Pemasukan Bulan Ini</span>
+              <strong id="monthlyIncome">Rp0</strong>
+              <small id="incomeChange">-</small>
+            </article>
+            <article class="kpi card negative">
+              <span>Pengeluaran Bulan Ini</span>
+              <strong id="monthlyExpense">Rp0</strong>
+              <small id="expenseChange">-</small>
+            </article>
+            <article class="kpi card">
+              <span>Tabungan Bersih</span>
+              <strong id="netSavings">Rp0</strong>
+              <small id="savingRate">-</small>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="card chart-card">
+              <div class="card-head">
+                <div>
+                  <h2>Arus Kas 6 Bulan</h2>
+                  <p>Pemasukan vs pengeluaran</p>
+                </div>
+              </div>
+              <canvas id="cashflowChart" height="220"></canvas>
+            </article>
+
+            <article class="card chart-card">
+              <div class="card-head">
+                <div>
+                  <h2>Pengeluaran per Kategori</h2>
+                  <p>Bulan terpilih</p>
+                </div>
+              </div>
+              <canvas id="categoryChart" height="220"></canvas>
+            </article>
+
+            <article class="card">
+              <div class="card-head">
+                <div>
+                  <h2>Transaksi Terbaru</h2>
+                  <p>10 transaksi terakhir</p>
+                </div>
+                <button class="text-btn" data-section="transactions">Lihat semua</button>
+              </div>
+              <div class="table-wrap compact">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th>
+                      <th>Deskripsi</th>
+                      <th>Kategori</th>
+                      <th class="right">Nominal</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTransactions"></tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-head">
+                <div>
+                  <h2>Alarm Keuangan</h2>
+                  <p>Prioritas yang perlu dipantau</p>
+                </div>
+              </div>
+              <div id="alerts" class="alerts"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="transactions" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Pembukuan</p>
+              <h2>Transaksi</h2>
+            </div>
+            <button class="btn primary" data-open-modal="transactionModal">Tambah transaksi</button>
+          </div>
+          <div class="card table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Jenis</th>
+                  <th>Deskripsi</th>
+                  <th>Kategori</th>
+                  <th>Akun</th>
+                  <th class="right">Nominal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="transactionTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="budgets" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Kontrol belanja</p>
+              <h2>Anggaran Bulanan</h2>
+            </div>
+            <button class="btn primary" data-open-modal="budgetModal">Tambah anggaran</button>
+          </div>
+          <div id="budgetList" class="cards-list"></div>
+        </section>
+
+        <section id="goals" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Perencanaan</p>
+              <h2>Tujuan Keuangan</h2>
+            </div>
+            <button class="btn primary" data-open-modal="goalModal">Tambah tujuan</button>
+          </div>
+          <div id="goalList" class="cards-list"></div>
+        </section>
+
+        <section id="bills" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Kewajiban rutin</p>
+              <h2>Tagihan</h2>
+            </div>
+            <button class="btn primary" data-open-modal="billModal">Tambah tagihan</button>
+          </div>
+          <div id="billList" class="cards-list"></div>
+        </section>
+
+        <section id="debts" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Relasi kas</p>
+              <h2>Hutang & Piutang</h2>
+            </div>
+            <button class="btn primary" data-open-modal="debtModal">Tambah catatan</button>
+          </div>
+          <div id="debtList" class="cards-list"></div>
+        </section>
+
+        <section id="reports" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Analisis</p>
+              <h2>Laporan</h2>
+            </div>
+            <button class="btn secondary" id="exportCsvBtn">Export CSV</button>
+          </div>
+          <div class="report-grid">
+            <article class="card">
+              <h3>Rasio Keuangan</h3>
+              <div id="ratioReport" class="metric-list"></div>
+            </article>
+            <article class="card">
+              <h3>Top Kategori Pengeluaran</h3>
+              <div id="topCategories" class="metric-list"></div>
+            </article>
+            <article class="card wide">
+              <h3>Proyeksi 3 Bulan</h3>
+              <p id="projectionText" class="muted"></p>
+            </article>
+          </div>
+        </section>
+
+        <section id="settings" class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Data</p>
+              <h2>Pengaturan</h2>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <article class="card">
+              <h3>Profil</h3>
+              <form id="profileForm" class="form">
+                <label>Nama
+                  <input id="profileName" placeholder="Nama Anda" />
+                </label>
+                <label>Mata uang
+                  <select id="currency">
+                    <option value="IDR">Rupiah Indonesia (IDR)</option>
+                    <option value="USD">US Dollar (USD)</option>
+                    <option value="SGD">Singapore Dollar (SGD)</option>
+                    <option value="MYR">Malaysian Ringgit (MYR)</option>
+                  </select>
+                </label>
+                <button class="btn primary" type="submit">Simpan profil</button>
+              </form>
+            </article>
+            <article class="card">
+              <h3>Backup Data</h3>
+              <p class="muted">Data disimpan di browser memakai localStorage. Export JSON untuk backup atau pindah perangkat.</p>
+              <div class="button-row">
+                <button class="btn secondary" id="exportJsonBtn">Export JSON</button>
+                <label class="btn secondary file-btn">
+                  Import JSON
+                  <input type="file" id="importJsonInput" accept="application/json" hidden />
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="transactionModal" class="modal">
+      <form method="dialog" class="modal-box form" id="transactionForm">
+        <div class="modal-head">
+          <h3>Tambah Transaksi</h3>
+          <button class="icon-btn" value="cancel" type="button" data-close-modal>×</button>
+        </div>
+        <input type="hidden" id="transactionId" />
+        <label>Tanggal <input type="date" id="transactionDate" required /></label>
+        <label>Jenis
+          <select id="transactionType">
+            <option value="income">Pemasukan</option>
+            <option value="expense">Pengeluaran</option>
+          </select>
+        </label>
+        <label>Deskripsi <input id="transactionDescription" required placeholder="contoh: Gaji, makan siang" /></label>
+        <label>Kategori <input id="transactionCategory" list="categoryOptions" required placeholder="contoh: Makanan" /></label>
+        <datalist id="categoryOptions"></datalist>
+        <label>Akun <input id="transactionAccount" placeholder="Bank, tunai, e-wallet" value="Bank" /></label>
+        <label>Nominal <input type="number" min="0" step="1000" id="transactionAmount" required /></label>
+        <button class="btn primary" type="submit">Simpan transaksi</button>
+      </form>
+    </dialog>
+
+    <dialog id="budgetModal" class="modal">
+      <form method="dialog" class="modal-box form" id="budgetForm">
+        <div class="modal-head">
+          <h3>Tambah Anggaran</h3>
+          <button class="icon-btn" value="cancel" type="button" data-close-modal>×</button>
+        </div>
+        <label>Kategori <input id="budgetCategory" required placeholder="Makanan" /></label>
+        <label>Limit bulanan <input type="number" min="0" step="1000" id="budgetLimit" required /></label>
+        <button class="btn primary" type="submit">Simpan anggaran</button>
+      </form>
+    </dialog>
+
+    <dialog id="goalModal" class="modal">
+      <form method="dialog" class="modal-box form" id="goalForm">
+        <div class="modal-head">
+          <h3>Tambah Tujuan</h3>
+          <button class="icon-btn" value="cancel" type="button" data-close-modal>×</button>
+        </div>
+        <label>Nama tujuan <input id="goalName" required placeholder="Dana darurat" /></label>
+        <label>Target nominal <input type="number" min="0" step="1000" id="goalTarget" required /></label>
+        <label>Saldo sekarang <input type="number" min="0" step="1000" id="goalCurrent" required /></label>
+        <label>Tenggat <input type="date" id="goalDeadline" /></label>
+        <button class="btn primary" type="submit">Simpan tujuan</button>
+      </form>
+    </dialog>
+
+    <dialog id="billModal" class="modal">
+      <form method="dialog" class="modal-box form" id="billForm">
+        <div class="modal-head">
+          <h3>Tambah Tagihan</h3>
+          <button class="icon-btn" value="cancel" type="button" data-close-modal>×</button>
+        </div>
+        <label>Nama tagihan <input id="billName" required placeholder="Internet rumah" /></label>
+        <label>Nominal <input type="number" min="0" step="1000" id="billAmount" required /></label>
+        <label>Jatuh tempo <input type="date" id="billDueDate" required /></label>
+        <label>Status
+          <select id="billStatus">
+            <option value="unpaid">Belum dibayar</option>
+            <option value="paid">Sudah dibayar</option>
+          </select>
+        </label>
+        <button class="btn primary" type="submit">Simpan tagihan</button>
+      </form>
+    </dialog>
+
+    <dialog id="debtModal" class="modal">
+      <form method="dialog" class="modal-box form" id="debtForm">
+        <div class="modal-head">
+          <h3>Tambah Hutang/Piutang</h3>
+          <button class="icon-btn" value="cancel" type="button" data-close-modal>×</button>
+        </div>
+        <label>Jenis
+          <select id="debtType">
+            <option value="receivable">Piutang</option>
+            <option value="payable">Hutang</option>
+          </select>
+        </label>
+        <label>Nama pihak <input id="debtPerson" required placeholder="Nama orang/lembaga" /></label>
+        <label>Nominal <input type="number" min="0" step="1000" id="debtAmount" required /></label>
+        <label>Jatuh tempo <input type="date" id="debtDueDate" /></label>
+        <label>Catatan <input id="debtNote" placeholder="Opsional" /></label>
+        <button class="btn primary" type="submit">Simpan catatan</button>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
